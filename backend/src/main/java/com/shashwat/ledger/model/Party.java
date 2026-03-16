@@ -29,5 +29,9 @@ public class Party {
 
     @Column(name = "created_date")
     private LocalDateTime createdDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
 

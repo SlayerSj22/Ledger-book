@@ -1,44 +1,39 @@
-import axios from "axios";
-
-const BASE_URL = "http://localhost:8000";
+import api from "./api";
 
 export const getLedgerEntries = async (accountId) => {
 
-  const res = await axios.get(
-    `${BASE_URL}/ledger/account/${accountId}`
-  );
+  const res = await api.get(`/ledger/account/${accountId}`);
 
   return res.data.data;
+
 };
 
 export const getLedgerEntry = async (entryId) => {
 
-  const res = await axios.get(
-    `${BASE_URL}/ledger/entry/${entryId}`
-  );
+  const res = await api.get(`/ledger/entry/${entryId}`);
 
   return res.data.data;
+
 };
 
 export const addLedgerEntry = async (payload) => {
-  return axios.post(`${BASE_URL}/ledger/add`, payload);
+
+  const res = await api.post(`/ledger/add`, payload);
+
+  return res.data.data;
+
 };
 
 export const updateLedgerEntry = async (entryId, payload) => {
 
-  const res = await axios.put(
-    `${BASE_URL}/ledger/entry/${entryId}`,
-    payload
-  );
+  const res = await api.put(`/ledger/entry/${entryId}`, payload);
 
   return res.data.data;
+
 };
 
 export const deleteLedgerEntry = async (entryId) => {
 
-  const res = await axios.delete(
-    `${BASE_URL}/ledger/entry/${entryId}`
-  );
+  await api.delete(`/ledger/entry/${entryId}`);
 
-  return res.data.data;
 };

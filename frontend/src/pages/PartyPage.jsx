@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getPartyById } from "../services/partyService";
 import { getAccountsByParty } from "../services/accountService";
 import AccountCard from "../components/AccountCard";
+import StatCard from "../components/StatCard";
 
 function PartyPage() {
 
@@ -19,11 +20,13 @@ function PartyPage() {
 
       setLoading(true);
 
-      const partyData = await getPartyById(id);
-      setParty(partyData);
+      const [partyData, accountsData] = await Promise.all([
+        getPartyById(id),
+        getAccountsByParty(id)
+      ]);
 
-      const accountsData = await getAccountsByParty(id);
-      setAccounts(accountsData);
+      setParty(partyData);
+      setAccounts(accountsData || []);
 
     } catch (err) {
 
@@ -54,6 +57,12 @@ function PartyPage() {
     0
   );
 
+  const openAccounts = accounts.filter(a => a.status === "OPEN").length;
+
+const closedAccounts = accounts.filter(a => a.status === "CLOSED").length;
+
+const totalAccounts = accounts.length;
+
   return (
     <div className="max-w-6xl mx-auto p-6">
 
@@ -82,6 +91,33 @@ function PartyPage() {
 
       </div>
 
+      <div className="grid grid-cols-4 gap-4 mb-6">
+
+  <StatCard
+    title="Total Pending"
+    value={`₹${totalPending.toLocaleString()}`}
+    color="text-red-600"
+  />
+
+  <StatCard
+    title="Accounts"
+    value={totalAccounts}
+    color="text-blue-600"
+  />
+
+  <StatCard
+    title="Open Accounts"
+    value={openAccounts}
+    color="text-green-600"
+  />
+
+  <StatCard
+    title="Closed Accounts"
+    value={closedAccounts}
+    color="text-gray-600"
+  />
+
+</div>
 
       {/* Accounts Header */}
       <div className="flex justify-between items-center mb-4">
@@ -99,23 +135,17 @@ function PartyPage() {
 
       </div>
 
-
       {/* Accounts Table */}
       <div className="bg-white border rounded-xl shadow-sm">
 
-        {/* Sticky Header */}
         <div className="grid grid-cols-5 gap-4 p-4 text-sm font-semibold text-gray-600 border-b bg-gray-50 sticky top-0 z-10">
-
           <span>Customer</span>
           <span>Total</span>
           <span>Pending</span>
           <span>Status</span>
           <span className="text-right">Actions</span>
-
         </div>
 
-
-        {/* Scrollable Body */}
         <div className="max-h-[420px] overflow-y-auto">
 
           {accounts.length === 0 && (

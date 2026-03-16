@@ -1,31 +1,39 @@
-import axios from "axios";
-
-const BASE_URL = "http://localhost:8000";
+import api from "./api";
 
 export const searchParties = async (query) => {
 
-  const res = await axios.get(
-    `${BASE_URL}/party/search?query=${query}`
-  );
+  const res = await api.get(`/party/search?query=${query}`);
 
   return res.data.data;
 
 };
 
-//this is working fine
 export const getPartyById = async (id) => {
 
-  const res = await axios.get(`${BASE_URL}/party/${id}`);
+  const res = await api.get(`/party/${id}`);
 
   return res.data.data;
 
 };
 
 export const getAllParties = async () => {
-  const res = await axios.get(`${BASE_URL}/party/all`);
+
+  const res = await api.get(`/party`);
+
   return res.data.data;
+
 };
 
 export const deleteParty = async (id) => {
-  await axios.delete(`${BASE_URL}/party/${id}`);
+
+  await api.delete(`/party/${id}`);
+
+};
+
+export const createParty = async (payload) => {
+
+  const res = await api.post(`/party`, payload);
+
+  return res.data.data;
+
 };

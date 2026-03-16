@@ -1,35 +1,41 @@
 package com.shashwat.ledger.repository;
 
-import com.shashwat.ledger.dto.AccountResponse;
 import com.shashwat.ledger.model.Account;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.*;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Query("""
-SELECT a
-FROM Account a
-JOIN FETCH a.party
-WHERE a.status = :status
-ORDER BY a.pendingAmount DESC
-""")
-    Page<Account> findOpenAccounts(@Param("status") String status, Pageable pageable);
+    SELECT a
+    FROM Account a
+    JOIN a.party p
+    WHERE a.status = :status
+    AND p.user.email = :email
+    ORDER BY a.pendingAmount DESC
+    """)
+    Page<Account> findOpenAccounts(
+            @Param("status") String status,
+            @Param("email") String email,
+            Pageable pageable
+    );
 
     @Query("""
-    SELECT a FROM Account a
-    JOIN FETCH a.party
-    WHERE a.party.id = :partyId
+    SELECT a
+    FROM Account a
+    JOIN a.party p
+    WHERE p.id = :partyId
+    AND p.user.email = :email
     """)
-    List<Account> findByPartyId(Long partyId);
-    @Query("SELECT a.status FROM Account a WHERE a.id = :id")
-    String findStatusById(@Param("id") Long id);
+    List<Account> findByPartyIdAndUserEmail(
+            @Param("partyId") Long partyId,
+            @Param("email") String email
+    );
+
+    Optional<Account> findByIdAndPartyUserEmail(Long id, String email);
 
     boolean existsByPartyId(Long partyId);
-
 }

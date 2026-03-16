@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { createParty } from "../services/partyService";
+
 
 function AddPartyPage() {
 
@@ -57,39 +58,34 @@ function AddPartyPage() {
 
   const handleSubmit = async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validate()) return;
+  if (!validate()) return;
 
-    try {
+  try {
 
-      const res = await axios.post(
-        "http://localhost:8000/party/register",
-        formData
-      );
+    const party = await createParty(formData);
+    console.log(party);
+    
+    navigate(`/party/${party.id}`);
 
-      const response = res.data;
+  } catch (err) {
 
-      if (response.status === 201) {
-        navigate("/");
-      } 
-      else {
-        setServerError(response.message);
-      }
+    const message =
+      err?.response?.data?.message ||
+      "Server error occurred";
 
-    } catch {
+    setServerError(message);
 
-      setServerError("Server error occurred");
+  }
 
-    }
-
-  };
+};
 
   return (
     <div className="max-w-xl mx-auto p-6">
 
       <h1 className="text-2xl font-bold mb-6">
-        Register Customer
+        Add Party
       </h1>
 
       <form

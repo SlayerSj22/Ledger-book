@@ -27,9 +27,11 @@ function LoginPage() {
     try {
 
       const res = await axios.post(
-        "http://localhost:8000/auth/login",
-        { email,password }
-      );
+  "http://localhost:8000/auth/login",
+  { email, password }
+);
+
+      
 
       localStorage.setItem("token",res.data.token);
 

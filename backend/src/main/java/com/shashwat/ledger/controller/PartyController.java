@@ -3,9 +3,7 @@ package com.shashwat.ledger.controller;
 import com.shashwat.ledger.dto.ApiResponse;
 import com.shashwat.ledger.dto.PartyRegistrationRequest;
 import com.shashwat.ledger.dto.PartyResponse;
-import com.shashwat.ledger.model.Party;
 import com.shashwat.ledger.service.PartyService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,26 +18,24 @@ public class PartyController {
         this.partyService = partyService;
     }
 
-    @PostMapping("/register")
-    public ApiResponse<Party> registerUser(
+    @PostMapping
+    public ApiResponse<PartyResponse> createParty(
             @RequestBody PartyRegistrationRequest request) {
 
-        Party savedParty = partyService.createParty(request);
+        PartyResponse response = partyService.createParty(request);
 
-        return ApiResponse.<Party>builder()
-                .data(savedParty)
-                .message("Customer registered successfully")
+        return ApiResponse.<PartyResponse>builder()
+                .data(response)
+                .message("Party created successfully")
                 .status(201)
                 .build();
     }
 
     @GetMapping("/search")
     public ApiResponse<List<PartyResponse>> searchParty(
-            @RequestParam String query
-    ) {
+            @RequestParam String query) {
 
-        List<PartyResponse> parties =
-                partyService.searchParty(query);
+        List<PartyResponse> parties = partyService.searchParty(query);
 
         return ApiResponse.<List<PartyResponse>>builder()
                 .data(parties)
@@ -61,20 +57,18 @@ public class PartyController {
                 .build();
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<Party>>> getAllParty() {
+    @GetMapping
+    public ApiResponse<List<PartyResponse>> getAllParties() {
 
-        List<Party> parties = partyService.getAllParty();
+        List<PartyResponse> parties = partyService.getAllParties();
 
-        ApiResponse<List<Party>> response =
-                ApiResponse.<List<Party>>builder()
-                        .data(parties)
-                        .message("Parties fetched successfully")
-                        .status(200)
-                        .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.<List<PartyResponse>>builder()
+                .data(parties)
+                .message("All parties fetched successfully")
+                .status(200)
+                .build();
     }
+
     @DeleteMapping("/{partyId}")
     public ApiResponse<Void> deleteParty(@PathVariable Long partyId) {
 
@@ -87,4 +81,3 @@ public class PartyController {
                 .build();
     }
 }
-

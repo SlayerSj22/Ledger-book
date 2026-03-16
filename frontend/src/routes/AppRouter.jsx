@@ -4,7 +4,7 @@ import LoginPage from "../pages/LoginPage";
 import PrivateRoute from "../components/PrivateRoute";
 import AppLayout from "../components/AppLayout";
 
-import AccountsPage from "../pages/AccountsPage";
+import DashboardPage from "../pages/DashboardPage";
 import PartyPage from "../pages/PartyPage";
 import AddPartyPage from "../pages/AddPartyPage";
 import LedgerPage from "../pages/LedgerPage";
@@ -29,7 +29,7 @@ function AppRouter() {
         }
       >
 
-        <Route path="/" element={<AccountsPage />} />
+        <Route path="/" element={<DashboardPage />} />
         <Route path="/party/:id" element={<PartyPage />} />
         <Route path="/party/add" element={<AddPartyPage />} />
         <Route path="/account/:accountId" element={<LedgerPage />} />

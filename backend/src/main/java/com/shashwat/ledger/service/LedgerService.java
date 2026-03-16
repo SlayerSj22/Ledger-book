@@ -8,6 +8,7 @@ import com.shashwat.ledger.model.Account;
 import com.shashwat.ledger.model.LedgerEntry;
 import com.shashwat.ledger.repository.AccountRepository;
 import com.shashwat.ledger.repository.LedgerEntryRepository;
+import com.shashwat.ledger.security.SecurityUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +20,13 @@ public class LedgerService {
 
     private final LedgerEntryRepository ledgerEntryRepository;
     private final AccountRepository accountRepository;
+    private final SecurityUtil securityUtil;
 
     public LedgerService(LedgerEntryRepository ledgerEntryRepository,
-                         AccountRepository accountRepository) {
+                         AccountRepository accountRepository,SecurityUtil securityUtil) {
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.accountRepository = accountRepository;
+        this.securityUtil=securityUtil;
     }
 
     /**
@@ -32,7 +35,10 @@ public class LedgerService {
     @Transactional
     public LedgerEntry addPayment(AddPaymentRequest request) {
 
-        Account account = accountRepository.findById(request.getAccountId())
+        String email = securityUtil.getCurrentUserEmail();
+
+        Account account = accountRepository
+                .findByIdAndPartyUserEmail(request.getAccountId(), email)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Account not found with id: " + request.getAccountId()));
 
@@ -43,7 +49,6 @@ public class LedgerService {
         double amount = request.getAmount();
         String type = request.getType().toUpperCase();
 
-        // ✅ CREDIT validation
         if ("CREDIT".equals(type) && amount > account.getPendingAmount()) {
             throw new IllegalArgumentException(
                     "Payment cannot exceed pending amount (Pending: " + account.getPendingAmount() + ")"
@@ -62,7 +67,7 @@ public class LedgerService {
 
         if ("CREDIT".equals(type)) {
             account.setTotalCredit(account.getTotalCredit() + amount);
-        } else if ("DEBIT".equals(type)) {
+        } else {
             account.setTotalDebit(account.getTotalDebit() + amount);
         }
 
@@ -80,15 +85,10 @@ public class LedgerService {
 
     public List<LedgerEntry> getLedgerForAccount(Long accountId) {
 
-        // Validate account exists
-        if (!accountRepository.existsById(accountId)) {
-            throw new ResourceNotFoundException(
-                    "Account not found with id: " + accountId
-            );
-        }
+        String email = securityUtil.getCurrentUserEmail();
 
         return ledgerEntryRepository
-                .findByAccountIdOrderByCreatedDateAsc(accountId);
+                .findByAccountIdAndUserEmail(accountId, email);
     }
 
     public LedgerEntryResponse mapToLedgerResponse(LedgerEntry entry) {
@@ -105,7 +105,10 @@ public class LedgerService {
     @Transactional
     public void deleteLedgerEntry(Long entryId) {
 
-        LedgerEntry entry = ledgerEntryRepository.findById(entryId)
+        String email = securityUtil.getCurrentUserEmail();
+
+        LedgerEntry entry = ledgerEntryRepository
+                .findByIdAndAccountPartyUserEmail(entryId, email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Ledger entry not found with id: " + entryId
@@ -140,7 +143,10 @@ public class LedgerService {
             Long entryId,
             UpdateLedgerEntryRequest request) {
 
-        LedgerEntry entry = ledgerEntryRepository.findById(entryId)
+        String email = securityUtil.getCurrentUserEmail();
+
+        LedgerEntry entry = ledgerEntryRepository
+                .findByIdAndAccountPartyUserEmail(entryId, email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Ledger entry not found with id: " + entryId
@@ -148,28 +154,24 @@ public class LedgerService {
 
         Account account = entry.getAccount();
 
-        // 1️⃣ revert old values
         if ("CREDIT".equalsIgnoreCase(entry.getType())) {
             account.setTotalCredit(account.getTotalCredit() - entry.getAmount());
         } else {
             account.setTotalDebit(account.getTotalDebit() - entry.getAmount());
         }
 
-        // 2️⃣ update entry
         entry.setAmount(request.getAmount());
         entry.setDescription(request.getDescription());
         entry.setType(request.getType());
 
         ledgerEntryRepository.save(entry);
 
-        // 3️⃣ apply new values
         if ("CREDIT".equalsIgnoreCase(request.getType())) {
             account.setTotalCredit(account.getTotalCredit() + request.getAmount());
         } else {
             account.setTotalDebit(account.getTotalDebit() + request.getAmount());
         }
 
-        // 4️⃣ recalc pending
         double pending =
                 account.getTotalAmount()
                         + account.getTotalDebit()
@@ -189,11 +191,12 @@ public class LedgerService {
 
     public LedgerEntry getEntry(Long entryId) {
 
-        return ledgerEntryRepository.findById(entryId)
+        String email = securityUtil.getCurrentUserEmail();
+
+        return ledgerEntryRepository
+                .findByIdAndAccountPartyUserEmail(entryId, email)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Entry not found"
-                        ));
+                        new ResourceNotFoundException("Entry not found"));
     }
 
 }

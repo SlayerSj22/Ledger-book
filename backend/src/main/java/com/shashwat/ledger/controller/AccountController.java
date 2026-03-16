@@ -23,7 +23,7 @@ public class AccountController {
     /**
      * Create a new bill (Account) for a customer
      */
-    @PostMapping("/create")
+    @PostMapping
     public ApiResponse<Account> createAccount(
             @RequestBody AccountCreateRequest request) {
 

@@ -1,12 +1,8 @@
-import axios from "axios";
-
-const BASE_URL = "http://localhost:8000";
+import api from "./api";
 
 export const getAccountsByParty = async (partyId) => {
 
-  const res = await axios.get(
-    `${BASE_URL}/account/party/${partyId}`
-  );
+  const res = await api.get(`/account/party/${partyId}`);
 
   return res.data.data;
 
@@ -14,33 +10,30 @@ export const getAccountsByParty = async (partyId) => {
 
 export const createAccount = async (payload) => {
 
-  const res = await axios.post(
-    `${BASE_URL}/account/create`,
-    payload
-  );
+  const res = await api.post(`/account`, payload);
 
   return res.data.data;
+
 };
 
 export const deleteAccount = async (accountId) => {
 
-  await axios.delete(`${BASE_URL}/account/${accountId}`);
+  await api.delete(`/account/${accountId}`);
 
 };
 
 export const getAccountById = async (id) => {
 
-  const res = await axios.get(
-    `http://localhost:8000/account/${id}`
-  );
+  const res = await api.get(`/account/${id}`);
 
   return res.data.data;
 
 };
 
-export const getStatusById = async(id) =>{
-  const res = await axios.get(
-    `http://localhost:8000/account/${id}/status`
-  )
+export const getStatusById = async (id) => {
+
+  const res = await api.get(`/account/${id}/status`);
+
   return res.data.data;
-}
+
+};
